@@ -16,6 +16,9 @@ redis.on("connect", () => {
 app.get("/", async (req, res) => {
   const clientIp = req.ip;
   const requestCount = await redis.incr(`${clientIp} : request_count`); //`${clientIp} : request_count` becomes key here and value = 0
+  if (requestCount == 1) {
+    redis.expire(`${clientIp}:request_count`, 60); // 60 sec max 10 req
+  }
   if (requestCount > 10) {
     return res.status(429).send("Too many requests");
   }
