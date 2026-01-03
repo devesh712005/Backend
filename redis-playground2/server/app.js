@@ -3,6 +3,7 @@ import { getProducts } from "./api/products.js";
 import { Redis } from "ioredis";
 
 const app = express();
+
 const redis = new Redis({
   host: "127.0.0.1",
   port: 6379,
@@ -12,7 +13,13 @@ redis.on("connect", () => {
   console.log("Redis connected successfulyy");
 });
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
+  const clientIp = req.ip;
+  const requestCount = await redis.incr(`${clientIp} : request_count`); //`${clientIp} : request_count` becomes key here and value = 0
+  if (requestCount > 10) {
+    return res.status(429).send("Too many requests");
+  }
+
   res.send("Hello from express");
 });
 app.get("/products", async (req, res) => {
