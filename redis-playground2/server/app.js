@@ -15,12 +15,16 @@ redis.on("connect", () => {
 
 app.get("/", async (req, res) => {
   const clientIp = req.ip;
-  const requestCount = await redis.incr(`${clientIp} : request_count`); //`${clientIp} : request_count` becomes key here and value = 0
+  const key = `${clientIp}: request_count`;
+  const requestCount = await redis.incr(key); //`${clientIp} : request_count` becomes key here and value = 0
   if (requestCount == 1) {
-    redis.expire(`${clientIp}:request_count`, 60); // 60 sec max 10 req
+    await redis.expire(key, 60); // 60 sec max 10 req
   }
+  const timeRemaining = await redis.ttl(key);
   if (requestCount > 10) {
-    return res.status(429).send("Too many requests");
+    return res
+      .status(429)
+      .send(`Too many requests,Please try again after ${timeRemaining}`);
   }
 
   res.send("Hello from express");
