@@ -10,3 +10,5 @@ redis-background/node_modules
 socketio/node_modules
 socketio2/client/node_modules
 socketio2/server/node_modules
+*.node_modules
+**/node_modules/
